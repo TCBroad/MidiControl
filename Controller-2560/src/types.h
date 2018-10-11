@@ -13,7 +13,7 @@ struct patch_t {
 
 struct state_t {
     unsigned char midi_channel;
-    char current_patch;
+    unsigned char current_patch;
     bool tuner_active;
 };
 

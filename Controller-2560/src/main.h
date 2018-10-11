@@ -13,5 +13,6 @@
 
 void update_display();
 void clear_display();
+void update_leds();
 
 #endif

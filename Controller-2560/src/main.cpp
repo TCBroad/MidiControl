@@ -15,13 +15,13 @@ struct patch_t patches[4] = {
 };
 
 struct state_t state = {
-    2, -1, false
+    2, 0, false
 };
 
 struct midi_message_t last_message;
 
 const char* clear = "                ";
-char* last_display;
+char last_display[17];
 
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
 
@@ -31,7 +31,6 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, midi_axe_in);
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
 void setup() {
-    last_display = (char*)malloc(sizeof(char) * 16);
     strcpy(last_display, clear);
 
     Serial.begin(9600);
@@ -57,11 +56,12 @@ void loop() {
     char key_pressed = keypad.getKey();
     if (key_pressed != NO_KEY) {
         // work out what it is
-        if(key_pressed >= '0' || key_pressed <= '9') {
+        if(key_pressed >= '0' && key_pressed <= '9') {
             DPRINTLN(key_pressed);
 
             // it's a patch change
             state.current_patch = key_pressed - 48; // to int from char
+            state.tuner_active = false;
             struct patch_t patch = patches[state.current_patch];
 
             if(patch.program_change > 0) {
@@ -76,25 +76,35 @@ void loop() {
             switch(key_pressed) {
                 case 'T':
                     // tuner
-                    DPRINTLN("Tuner ");
+                    DPRINTLN("Tuner");
                     state.tuner_active = !state.tuner_active;
 
                     midi_main.sendControlChange(15, state.tuner_active ? 127 : 0, state.midi_channel);
                     break;
                 case 'U':
                     // bank up
+                    DPRINTLN("Bank up");
+
                     break;
                 case 'D':
                     // bank down
+                    DPRINTLN("Bank down");
+
                     break;                
                 case 'a':
                     // global A
+                    DPRINTLN("Global A");
+
                     break;
                 case 'b':
                     // global B
+                    DPRINTLN("Global B");
+
                     break;
                 case 'c':
                     // global C
+                    DPRINTLN("Global C");
+
                     break;        
             }
         }
@@ -113,19 +123,34 @@ void loop() {
 
     // update display
     update_display();
+    update_leds();
 }
 
 void update_display() {
     char* output = (char*)malloc(sizeof(char) * 16);
-    sprintf(output, "Patch: %d", state.current_patch);
+
+    if(state.tuner_active) {
+        sprintf(output, "Tuner active");
+    } else {
+        sprintf(output, "Patch: %d", state.current_patch);
+    }
 
     if(strcmp(last_display, output) != 0) {
         DPRINT("Updating display: ");
         DPRINTLN(output);
 
         clear_display();
+
+        // char* line1 = (char*)malloc(sizeof(char) * 16);
+        // char* line2 = (char*)malloc(sizeof(char) * 16);
+        // strncpy(line1, output, 16);
+        // strncpy(line2, output + 16, 16);
+        
         lcd.setCursor(0, 0);
         lcd.print(output);
+
+        // lcd.setCursor(0, 1);
+        // lcd.print(line2);
 
         strcpy(last_display, output);
     }
@@ -138,4 +163,13 @@ void clear_display() {
     lcd.print(clear);
     lcd.setCursor(0, 1);
     lcd.print(clear);
+}
+
+void update_leds() { 
+    byte output = 0;
+    bitSet(output, state.current_patch + 1);
+
+    digitalWrite(latch_pin, LOW);
+    shiftOut(data_pin, clock_pin, MSBFIRST, output);
+    digitalWrite(latch_pin, HIGH);
 }
