@@ -7,6 +7,7 @@
 #include "types.h"
 #include "io.h"
 
+// move to eeprom
 struct patch_t patches[4] = {
     { "patch 1", 0, 1, -1, 0 },
     { "patch 2", 1, 2, -1, 0 },
@@ -25,7 +26,7 @@ char last_display[17];
 
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
 
-MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, midi_main);
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, midi_main);
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, midi_axe_in);
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
@@ -79,7 +80,7 @@ void loop() {
                     DPRINTLN("Tuner");
                     state.tuner_active = !state.tuner_active;
 
-                    midi_main.sendControlChange(15, state.tuner_active ? 127 : 0, state.midi_channel);
+                    midi_main.sendControlChange(15, state.tuner_active ? MIDI_HIGH : MIDI_LOW, state.midi_channel);
                     break;
                 case 'U':
                     // bank up
@@ -110,20 +111,28 @@ void loop() {
         }
     }
 
+    handle_axe_fx();
+
+    // update display
+    update_display();
+    update_leds();
+}
+
+void handle_axe_fx() {
+    // if tuner, handle that
+    // get patch num
+    // get patch name
+
     // read axe fx midi
     if(midi_axe_in.read()) {
         if(midi_axe_in.getChannel() == state.midi_channel) {
-            last_message = {
+            struct midi_message_t message = {
                 midi_axe_in.getType(),
                 midi_axe_in.getData1(),
                 midi_axe_in.getData2()
             };
         }
     }
-
-    // update display
-    update_display();
-    update_leds();
 }
 
 void update_display() {

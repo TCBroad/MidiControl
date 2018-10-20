@@ -1,0 +1,355 @@
+EESchema Schematic File Version 4
+LIBS:MidiController-cache
+EELAYER 26 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L Device:R R1
+U 1 1 5BC01F9C
+P 1400 1000
+F 0 "R1" V 1193 1000 50  0000 C CNN
+F 1 "R" V 1284 1000 50  0000 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal" V 1330 1000 50  0001 C CNN
+F 3 "~" H 1400 1000 50  0001 C CNN
+	1    1400 1000
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R2
+U 1 1 5BC02095
+P 3000 1150
+F 0 "R2" H 3070 1196 50  0000 L CNN
+F 1 "R" H 3070 1105 50  0000 L CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal" V 2930 1150 50  0001 C CNN
+F 3 "~" H 3000 1150 50  0001 C CNN
+	1    3000 1150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R7
+U 1 1 5BC022F8
+P 1750 3950
+F 0 "R7" V 1543 3950 50  0000 C CNN
+F 1 "R" V 1634 3950 50  0000 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal" V 1680 3950 50  0001 C CNN
+F 3 "~" H 1750 3950 50  0001 C CNN
+	1    1750 3950
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R3
+U 1 1 5BC02375
+P 2850 1550
+F 0 "R3" H 2920 1596 50  0000 L CNN
+F 1 "R" H 2920 1505 50  0000 L CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal" V 2780 1550 50  0001 C CNN
+F 3 "~" H 2850 1550 50  0001 C CNN
+	1    2850 1550
+	1    0    0    -1  
+$EndComp
+$Comp
+L Isolator:6N138 U1
+U 1 1 5BC02513
+P 2400 1200
+F 0 "U1" H 2400 1667 50  0000 C CNN
+F 1 "6N138" H 2400 1576 50  0000 C CNN
+F 2 "Package_DIP:DIP-8_W7.62mm_Socket" H 2690 900 50  0001 C CNN
+F 3 "http://www.onsemi.com/pub/Collateral/HCPL2731-D.pdf" H 2690 900 50  0001 C CNN
+	1    2400 1200
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0101
+U 1 1 5BC02745
+P 2850 1800
+F 0 "#PWR0101" H 2850 1550 50  0001 C CNN
+F 1 "GND" H 2855 1627 50  0000 C CNN
+F 2 "" H 2850 1800 50  0001 C CNN
+F 3 "" H 2850 1800 50  0001 C CNN
+	1    2850 1800
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0102
+U 1 1 5BC0277F
+P 2700 1500
+F 0 "#PWR0102" H 2700 1250 50  0001 C CNN
+F 1 "GND" H 2705 1327 50  0000 C CNN
+F 2 "" H 2700 1500 50  0001 C CNN
+F 3 "" H 2700 1500 50  0001 C CNN
+	1    2700 1500
+	1    0    0    -1  
+$EndComp
+$Comp
+L pspice:DIODE D1
+U 1 1 5BC027E3
+P 1650 1250
+F 0 "D1" V 1696 1122 50  0000 R CNN
+F 1 "DIODE" V 1605 1122 50  0000 R CNN
+F 2 "Diode_THT:D_5KPW_P12.70mm_Horizontal" H 1650 1250 50  0001 C CNN
+F 3 "" H 1650 1250 50  0001 C CNN
+	1    1650 1250
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	1550 1000 1650 1000
+Wire Wire Line
+	2100 1000 2100 1100
+Wire Wire Line
+	1650 1050 1650 1000
+Wire Wire Line
+	1650 1000 2100 1000
+Wire Wire Line
+	1650 1450 2100 1450
+Wire Wire Line
+	2100 1450 2100 1300
+$Comp
+L power:+5V #PWR0103
+U 1 1 5BC02F29
+P 3000 800
+F 0 "#PWR0103" H 3000 650 50  0001 C CNN
+F 1 "+5V" H 3015 973 50  0000 C CNN
+F 2 "" H 3000 800 50  0001 C CNN
+F 3 "" H 3000 800 50  0001 C CNN
+	1    3000 800 
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2700 1400 2700 1500
+Wire Wire Line
+	2850 1800 2850 1700
+Wire Wire Line
+	2700 1000 2900 1000
+Wire Wire Line
+	2700 1100 2850 1100
+Wire Wire Line
+	2850 1100 2850 1400
+Connection ~ 1650 1000
+Wire Wire Line
+	3000 1000 3000 950 
+Wire Wire Line
+	2700 1300 3000 1300
+Wire Wire Line
+	2900 1000 2900 950 
+Wire Wire Line
+	2900 950  3000 950 
+Connection ~ 3000 950 
+$Comp
+L Device:R R4
+U 1 1 5BC0A170
+P 1450 2400
+F 0 "R4" V 1243 2400 50  0000 C CNN
+F 1 "R" V 1334 2400 50  0000 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal" V 1380 2400 50  0001 C CNN
+F 3 "~" H 1450 2400 50  0001 C CNN
+	1    1450 2400
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R5
+U 1 1 5BC0A177
+P 3050 2550
+F 0 "R5" H 3120 2596 50  0000 L CNN
+F 1 "R" H 3120 2505 50  0000 L CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal" V 2980 2550 50  0001 C CNN
+F 3 "~" H 3050 2550 50  0001 C CNN
+	1    3050 2550
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R6
+U 1 1 5BC0A17E
+P 2900 2950
+F 0 "R6" H 2970 2996 50  0000 L CNN
+F 1 "R" H 2970 2905 50  0000 L CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal" V 2830 2950 50  0001 C CNN
+F 3 "~" H 2900 2950 50  0001 C CNN
+	1    2900 2950
+	1    0    0    -1  
+$EndComp
+$Comp
+L Isolator:6N138 U2
+U 1 1 5BC0A185
+P 2450 2600
+F 0 "U2" H 2450 3067 50  0000 C CNN
+F 1 "6N138" H 2450 2976 50  0000 C CNN
+F 2 "Package_DIP:DIP-8_W7.62mm_Socket" H 2740 2300 50  0001 C CNN
+F 3 "http://www.onsemi.com/pub/Collateral/HCPL2731-D.pdf" H 2740 2300 50  0001 C CNN
+	1    2450 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0104
+U 1 1 5BC0A18C
+P 2900 3200
+F 0 "#PWR0104" H 2900 2950 50  0001 C CNN
+F 1 "GND" H 2905 3027 50  0000 C CNN
+F 2 "" H 2900 3200 50  0001 C CNN
+F 3 "" H 2900 3200 50  0001 C CNN
+	1    2900 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0105
+U 1 1 5BC0A192
+P 2750 2900
+F 0 "#PWR0105" H 2750 2650 50  0001 C CNN
+F 1 "GND" H 2755 2727 50  0000 C CNN
+F 2 "" H 2750 2900 50  0001 C CNN
+F 3 "" H 2750 2900 50  0001 C CNN
+	1    2750 2900
+	1    0    0    -1  
+$EndComp
+$Comp
+L pspice:DIODE D2
+U 1 1 5BC0A198
+P 1700 2650
+F 0 "D2" V 1746 2522 50  0000 R CNN
+F 1 "DIODE" V 1655 2522 50  0000 R CNN
+F 2 "Diode_THT:D_5KPW_P12.70mm_Horizontal" H 1700 2650 50  0001 C CNN
+F 3 "" H 1700 2650 50  0001 C CNN
+	1    1700 2650
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	1600 2400 1700 2400
+Wire Wire Line
+	2150 2400 2150 2500
+Wire Wire Line
+	1700 2450 1700 2400
+Wire Wire Line
+	1700 2400 2150 2400
+Wire Wire Line
+	1700 2850 2150 2850
+Wire Wire Line
+	2150 2850 2150 2700
+$Comp
+L power:+5V #PWR0106
+U 1 1 5BC0A1A8
+P 3050 2250
+F 0 "#PWR0106" H 3050 2100 50  0001 C CNN
+F 1 "+5V" H 3065 2423 50  0000 C CNN
+F 2 "" H 3050 2250 50  0001 C CNN
+F 3 "" H 3050 2250 50  0001 C CNN
+	1    3050 2250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2750 2800 2750 2900
+Wire Wire Line
+	2900 3200 2900 3100
+Wire Wire Line
+	2750 2400 2950 2400
+Wire Wire Line
+	2750 2500 2900 2500
+Wire Wire Line
+	2900 2500 2900 2800
+Connection ~ 1700 2400
+Wire Wire Line
+	3050 2400 3050 2350
+Wire Wire Line
+	2750 2700 3050 2700
+Wire Wire Line
+	2950 2400 2950 2350
+Wire Wire Line
+	2950 2350 3050 2350
+Wire Wire Line
+	3050 2250 3050 2350
+Connection ~ 3050 2350
+Wire Wire Line
+	1900 3950 2050 3950
+Text Label 2150 4400 0    50   ~ 0
+TX1
+$Comp
+L power:+5V #PWR0108
+U 1 1 5BC0EB96
+P 2050 3750
+F 0 "#PWR0108" H 2050 3600 50  0001 C CNN
+F 1 "+5V" H 2065 3923 50  0000 C CNN
+F 2 "" H 2050 3750 50  0001 C CNN
+F 3 "" H 2050 3750 50  0001 C CNN
+	1    2050 3750
+	1    0    0    -1  
+$EndComp
+Connection ~ 1650 1450
+Text Label 750  1000 0    50   ~ 0
+MIDI1_RX
+Wire Wire Line
+	750  1450 1650 1450
+Text Label 750  1450 0    50   ~ 0
+MIDI1_TX
+Wire Wire Line
+	1700 2850 750  2850
+Connection ~ 1700 2850
+Text Label 750  2400 0    50   ~ 0
+MIDI2_RX
+Text Label 750  2850 0    50   ~ 0
+MIDI2_TX
+Text Label 750  3950 0    50   ~ 0
+MIDI3_RX
+Text Label 750  4400 0    50   ~ 0
+MIDI3_TX
+Wire Wire Line
+	750  1000 1250 1000
+Connection ~ 1250 1000
+Wire Wire Line
+	1250 1000 1300 1000
+Wire Wire Line
+	2050 3700 2050 3750
+Connection ~ 2050 3750
+Wire Wire Line
+	2050 3750 2050 3950
+Wire Wire Line
+	750  3950 1600 3950
+Connection ~ 1600 3950
+Wire Wire Line
+	1600 3950 1650 3950
+Wire Wire Line
+	750  2400 1300 2400
+Wire Wire Line
+	750  4400 2600 4400
+Wire Wire Line
+	3050 2700 3100 2700
+Wire Wire Line
+	3100 2700 3100 4400
+Wire Wire Line
+	3100 4400 2700 4400
+Wire Wire Line
+	2700 4400 2700 5050
+Connection ~ 3050 2700
+Wire Wire Line
+	2800 5050 2800 4550
+Wire Wire Line
+	2800 4550 3300 4550
+Wire Wire Line
+	3300 4550 3300 1300
+Wire Wire Line
+	3300 1300 3000 1300
+Connection ~ 3000 1300
+$Comp
+L Connector:Conn_01x03_Male J1
+U 1 1 5BC2507A
+P 2700 5250
+F 0 "J1" V 2853 5063 50  0000 R CNN
+F 1 "Conn_01x03_Male" V 2762 5063 50  0000 R CNN
+F 2 "" H 2700 5250 50  0001 C CNN
+F 3 "~" H 2700 5250 50  0001 C CNN
+	1    2700 5250
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	2600 5050 2600 4400
+Wire Wire Line
+	3000 800  3000 950 
+$EndSCHEMATC

@@ -1,7 +1,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#define DEBUG   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank.
+//#define DEBUG   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank.
 
 #ifdef DEBUG    //Macros are usually in all capital letters.
   #define DPRINT(...)    Serial.print(__VA_ARGS__)     //DPRINT is a macro, debug print
@@ -14,5 +14,6 @@
 void update_display();
 void clear_display();
 void update_leds();
+void handle_axe_fx();
 
 #endif

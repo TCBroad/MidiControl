@@ -1,7 +1,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include <midi_Defs.h>
+#define MIDI_HIGH 127
+#define MIDI_LOW 0
 
 struct patch_t {
     const char* name;
@@ -21,6 +22,21 @@ struct midi_message_t {
 	unsigned char type;
     unsigned char data1;
     unsigned char data2;
+
 };
+
+bool operator==(const midi_message_t& lhs, const midi_message_t& rhs)
+{
+    return lhs.type == rhs.type &&
+            lhs.data1 == rhs.data1 &&
+            lhs.data2 == rhs.data2; 
+}
+
+bool operator!=(const midi_message_t& lhs, const midi_message_t& rhs)
+{
+    return lhs.type != rhs.type &&
+            lhs.data1 != rhs.data1 &&
+            lhs.data2 != rhs.data2; 
+}
 
 #endif
