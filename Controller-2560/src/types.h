@@ -1,8 +1,13 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <MIDI.h>
+
 #define MIDI_HIGH 127
 #define MIDI_LOW 0
+
+#define SCENE_CHANGE_CC 33
+#define TUNER_CC 15
 
 struct patch_t {
     const char* name;
@@ -21,7 +26,7 @@ struct state_t {
 };
 
 struct midi_message_t {
-	unsigned char type;
+	midi::MidiType type;
     unsigned char data1;
     unsigned char data2;
 };

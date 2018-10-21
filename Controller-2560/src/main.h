@@ -11,6 +11,8 @@
   #define DPRINTLN(...)   //now defines a blank line
 #endif
 
+void handle_input();
+void handle_midi_in();
 void update_display();
 void clear_display();
 void update_leds();

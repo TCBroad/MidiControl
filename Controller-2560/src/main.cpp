@@ -8,23 +8,23 @@
 #include "io.h"
 
 // move to eeprom
-struct patch_t patches[4] = {
-    { "patch 1", 0, 1, -1, 0 },
-    { "patch 2", 1, 2, -1, 0 },
-    { "patch 3", 2, 3, -1, 0 },
-    { "patch 4", 3, 4, -1, 0 },
-    { "patch 5", 4, 5, -1, 0 }
-};
+struct patch_t patches[5] = {
+    {"patch 1", 0, 1, -1, 0},
+    {"patch 2", 1, 2, -1, 0},
+    {"patch 3", 2, 3, -1, 0},
+    {"patch 4", 3, 4, -1, 0},
+    {"patch 5", 4, 5, -1, 0}};
 
 // channel, patch, scene, bank, tuner
 struct state_t state = {
-    2, 0, 0, 0, false
-};
+    2, 0, 1, 0, false};
 
-struct midi_message_t last_message;
+struct midi_message_t last_axe_message;
+struct midi_message_t last_main_message;
 
-const char* clear = "                ";
-char last_display[17];
+const char *clear = "                ";
+char last_display1[32];
+char last_display2[32];
 
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
 
@@ -33,19 +33,22 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, midi_axe_in);
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
-void setup() {
-    strcpy(last_display, clear);
+void setup()
+{
+    strcpy(last_display1, clear);
+    strcpy(last_display2, clear);
 
     Serial.begin(9600);
     DPRINTLN("Starting");
 
     pinMode(RED_PIN, OUTPUT);
-    pinMode(GREEN_PIN, OUTPUT);  
+    pinMode(GREEN_PIN, OUTPUT);
     pinMode(BLUE_PIN, OUTPUT);
+    pinMode(MIDI_MESSAGE_RECIEVED_PIN, OUTPUT);
 
     lcd.begin(16, 2);
     lcd.setCursor(0, 0);
-        
+
     lcd.print("Starting...");
 
     digitalWrite(RED_PIN, HIGH);
@@ -58,53 +61,81 @@ void setup() {
     lcd.clear();
 }
 
-void loop() {
-    // read input
+void loop()
+{
+    handle_input();
+    handle_midi_in();
+    handle_axe_fx();
+    update_display();
+    update_leds();
+}
+
+void handle_input() {
+    digitalWrite(MIDI_MESSAGE_RECIEVED_PIN, LOW);
+
     char key_pressed = keypad.getKey();
-    if (key_pressed != NO_KEY) {
+    if (key_pressed != NO_KEY)
+    {
         // work out what it is
-        if(key_pressed >= '0' && key_pressed <= '4') {
+        if (key_pressed >= '0' && key_pressed <= '9')
+        {
+            int value = key_pressed - 48; // to int from char
+            DPRINTLN(value);
+
+            state.tuner_active = false;
+
             // 0 - 4 it's a patch change
-            DPRINTLN(key_pressed);
+            if (value >= 0 && value <= 4)
+            {
+                state.current_patch = value;
+                struct patch_t patch = patches[state.current_patch];
 
-            state.current_patch = key_pressed - 48; // to int from char
-            state.tuner_active = false;
-            struct patch_t patch = patches[state.current_patch];
+                if (patch.program_change > 0)
+                {
+                    midi_main.sendProgramChange(patch.program_change, state.midi_channel);
+                }
 
-            if(patch.program_change > 0) {
-                midi_main.sendProgramChange(patch.program_change, state.midi_channel);
+                if (patch.cc_num > -1)
+                {
+                    midi_main.sendControlChange(patch.cc_num, patch.cc_data, state.midi_channel);
+                }
             }
 
-            if(patch.cc_num > -1) {
-                midi_main.sendControlChange(patch.cc_num, patch.cc_data, state.midi_channel);
-            }
-        } else if (key_pressed >= '5' && key_pressed <= '9') {
-            DPRINTLN(key_pressed);
             // 5 - 9 it's a scene change
-            state.current_scene = key_pressed - 53;
-            state.tuner_active = false;
+            if (value >= 5)
+            {
+                state.current_scene = value - 4; // scenes are 1 - 5
+                state.tuner_active = false;
 
-            midi_main.sendControlChange(SCENE_CHANGE_CC, state.current_scene, state.midi_channel);
-        } else {
+                midi_main.sendControlChange(SCENE_CHANGE_CC, state.current_scene, state.midi_channel);
+            }
+        }
+        else
+        {
             // command button
-            switch(key_pressed) {
+            switch (key_pressed)
+            {
                 case 'T':
                     // tuner
                     DPRINTLN("Tuner");
                     state.tuner_active = !state.tuner_active;
 
-                    midi_main.sendControlChange(15, state.tuner_active ? MIDI_HIGH : MIDI_LOW, state.midi_channel);
+                    midi_main.sendControlChange(TUNER_CC, state.tuner_active ? MIDI_HIGH : MIDI_LOW, state.midi_channel);
                     break;
                 case 'U':
                     // bank up
-                    DPRINTLN("Bank up");
+                    DPRINT("Bank up: ");
+                    state.current_bank = min(state.current_bank + 1, MAX_BANKS);
 
+                    DPRINTLN(state.current_bank);
                     break;
                 case 'D':
                     // bank down
-                    DPRINTLN("Bank down");
+                    DPRINT("Bank down: ");
+                    state.current_bank = max(state.current_bank - 1, 0);
 
-                    break;                
+                    DPRINTLN(state.current_bank);
+                    break;
                 case 'a':
                     // global A
                     DPRINTLN("Global A");
@@ -119,82 +150,103 @@ void loop() {
                     // global C
                     DPRINTLN("Global C");
 
-                    break;        
+                    break;
             }
         }
     }
-
-    handle_axe_fx();
-
-    // update display
-    update_display();
-    update_leds();
 }
 
-void handle_axe_fx() {
+void handle_midi_in() {
+    if(midi_main.read()) {
+        DPRINTLN("Read midi_main()");
+
+        digitalWrite(MIDI_MESSAGE_RECIEVED_PIN, HIGH);
+#ifdef DEBUG
+        delay(50);
+#endif
+    }
+}
+
+void handle_axe_fx()
+{
     // if tuner, handle that
     // get patch num
     // get patch name
 
     // read axe fx midi
-    if(midi_axe_in.read()) {
-        if(midi_axe_in.getChannel() == state.midi_channel) {
+    if (midi_axe_in.read())
+    {
+        DPRINTLN("Read midi_axe_in()");
+
+        if (midi_axe_in.getChannel() == state.midi_channel)
+        {
             struct midi_message_t message = {
                 midi_axe_in.getType(),
                 midi_axe_in.getData1(),
-                midi_axe_in.getData2()
-            };
+                midi_axe_in.getData2()};
         }
     }
 }
 
-void update_display() {
-    char* output = (char*)malloc(sizeof(char) * 16);
+void update_display()
+{
+    char *line1 = (char *)malloc(sizeof(char) * 16);
+    char *line2 = (char *)malloc(sizeof(char) * 16);
 
-    if(state.tuner_active) {
-        sprintf(output, "Tuner active");
-    } else {
-        sprintf(output, "Patch: %d", state.current_patch);
+    if (state.tuner_active)
+    {
+        sprintf(line1, "Tuner active");
+        sprintf(line2, "%s", clear);
+    }
+    else
+    {
+        sprintf(line1, "Patch: %d", state.current_patch);
+        sprintf(line2, "Scene: %d", state.current_scene);
     }
 
-    if(strcmp(last_display, output) != 0) {
+    if (strcmp(last_display1, line1) != 0 || strcmp(last_display2, line2) != 0)
+    {
         DPRINT("Updating display: ");
-        DPRINTLN(output);
+        DPRINT(line1);
+        DPRINT("|");
+        DPRINTLN(line2);
 
         clear_display();
 
-        // char* line1 = (char*)malloc(sizeof(char) * 16);
-        // char* line2 = (char*)malloc(sizeof(char) * 16);
-        // strncpy(line1, output, 16);
-        // strncpy(line2, output + 16, 16);
-        
         lcd.setCursor(0, 0);
-        lcd.print(output);
+        lcd.print(line1);
 
-        // lcd.setCursor(0, 1);
-        // lcd.print(line2);
+        lcd.setCursor(0, 1);
+        lcd.print(line2);
 
-        strcpy(last_display, output);
+        strcpy(last_display1, line1);
+        strcpy(last_display2, line2);
     }
 
-    free(output);  
+    free(line1);
+    free(line2);
 }
 
-void clear_display() {
+void clear_display()
+{
     lcd.setCursor(0, 0);
     lcd.print(clear);
     lcd.setCursor(0, 1);
     lcd.print(clear);
 }
 
-void update_leds() { 
+void update_leds()
+{
     int rgb[3];
 
-    if(state.tuner_active) {
+    if (state.tuner_active)
+    {
         rgb[0] = 0x0;
         rgb[1] = 0xff;
         rgb[2] = 0x10;
-    } else {
+    }
+    else
+    {
         rgb[0] = 0x80;
         rgb[1] = 0x00;
         rgb[2] = 0x80;
