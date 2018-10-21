@@ -15,6 +15,8 @@ struct patch_t {
 struct state_t {
     unsigned char midi_channel;
     unsigned char current_patch;
+    unsigned char current_scene;
+    unsigned char current_bank;
     bool tuner_active;
 };
 
@@ -22,7 +24,6 @@ struct midi_message_t {
 	unsigned char type;
     unsigned char data1;
     unsigned char data2;
-
 };
 
 bool operator==(const midi_message_t& lhs, const midi_message_t& rhs)

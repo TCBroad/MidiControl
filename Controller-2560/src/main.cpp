@@ -12,11 +12,13 @@ struct patch_t patches[4] = {
     { "patch 1", 0, 1, -1, 0 },
     { "patch 2", 1, 2, -1, 0 },
     { "patch 3", 2, 3, -1, 0 },
-    { "patch 4", 3, 0, 33, 3 }
+    { "patch 4", 3, 4, -1, 0 },
+    { "patch 5", 4, 5, -1, 0 }
 };
 
+// channel, patch, scene, bank, tuner
 struct state_t state = {
-    2, 0, false
+    2, 0, 0, 0, false
 };
 
 struct midi_message_t last_message;
@@ -37,14 +39,18 @@ void setup() {
     Serial.begin(9600);
     DPRINTLN("Starting");
 
+    pinMode(RED_PIN, OUTPUT);
+    pinMode(GREEN_PIN, OUTPUT);  
+    pinMode(BLUE_PIN, OUTPUT);
+
     lcd.begin(16, 2);
     lcd.setCursor(0, 0);
         
     lcd.print("Starting...");
 
-    pinMode(latch_pin, OUTPUT);
-    pinMode(data_pin, OUTPUT);  
-    pinMode(clock_pin, OUTPUT);
+    digitalWrite(RED_PIN, HIGH);
+    digitalWrite(GREEN_PIN, HIGH);
+    digitalWrite(BLUE_PIN, HIGH);
 
     midi_main.begin(state.midi_channel);
     midi_axe_in.begin(state.midi_channel);
@@ -57,10 +63,10 @@ void loop() {
     char key_pressed = keypad.getKey();
     if (key_pressed != NO_KEY) {
         // work out what it is
-        if(key_pressed >= '0' && key_pressed <= '9') {
+        if(key_pressed >= '0' && key_pressed <= '4') {
+            // 0 - 4 it's a patch change
             DPRINTLN(key_pressed);
 
-            // it's a patch change
             state.current_patch = key_pressed - 48; // to int from char
             state.tuner_active = false;
             struct patch_t patch = patches[state.current_patch];
@@ -72,6 +78,13 @@ void loop() {
             if(patch.cc_num > -1) {
                 midi_main.sendControlChange(patch.cc_num, patch.cc_data, state.midi_channel);
             }
+        } else if (key_pressed >= '5' && key_pressed <= '9') {
+            DPRINTLN(key_pressed);
+            // 5 - 9 it's a scene change
+            state.current_scene = key_pressed - 53;
+            state.tuner_active = false;
+
+            midi_main.sendControlChange(SCENE_CHANGE_CC, state.current_scene, state.midi_channel);
         } else {
             // command button
             switch(key_pressed) {
@@ -175,10 +188,19 @@ void clear_display() {
 }
 
 void update_leds() { 
-    byte output = 0;
-    bitSet(output, state.current_patch + 1);
+    int rgb[3];
 
-    digitalWrite(latch_pin, LOW);
-    shiftOut(data_pin, clock_pin, MSBFIRST, output);
-    digitalWrite(latch_pin, HIGH);
+    if(state.tuner_active) {
+        rgb[0] = 0x0;
+        rgb[1] = 0xff;
+        rgb[2] = 0x10;
+    } else {
+        rgb[0] = 0x80;
+        rgb[1] = 0x00;
+        rgb[2] = 0x80;
+    }
+
+    analogWrite(RED_PIN, rgb[0]);
+    analogWrite(GREEN_PIN, rgb[1]);
+    analogWrite(BLUE_PIN, rgb[2]);
 }
