@@ -13,12 +13,15 @@ struct patch_t patches[5] = {
     {"patch 2", 1, 2, -1, 0},
     {"patch 3", 2, 3, -1, 0},
     {"patch 4", 3, 4, -1, 0},
-    {"patch 5", 4, 5, -1, 0}};
+    {"patch 5", 4, 5, -1, 0}
+};
 
 // channel, patch, scene, bank, tuner
 struct state_t state = {
-    2, 0, 1, 0, false};
+    2, 0, 1, 0, false, false
+};
 
+// global vars
 struct midi_message_t last_axe_message;
 struct midi_message_t last_main_message;
 
@@ -26,6 +29,9 @@ const char *clear = "                ";
 char last_display1[32];
 char last_display2[32];
 
+long keypad_hold_timer;
+
+// Hardware
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
 
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, midi_main);
@@ -45,6 +51,8 @@ void setup()
     pinMode(GREEN_PIN, OUTPUT);
     pinMode(BLUE_PIN, OUTPUT);
     pinMode(MIDI_MESSAGE_RECIEVED_PIN, OUTPUT);
+
+    keypad.setHoldTime(500);
 
     lcd.begin(16, 2);
     lcd.setCursor(0, 0);
@@ -93,6 +101,9 @@ void handle_input() {
                 if (patch.program_change > 0)
                 {
                     midi_main.sendProgramChange(patch.program_change, state.midi_channel);
+                    midi_main.sendControlChange(SCENE_CHANGE_CC, 1, state.midi_channel);
+
+                    state.current_scene = 1;
                 }
 
                 if (patch.cc_num > -1)
@@ -104,7 +115,12 @@ void handle_input() {
             // 5 - 9 it's a scene change
             if (value >= 5)
             {
-                state.current_scene = value - 4; // scenes are 1 - 5
+                if(keypad.getState() == HOLD) {                    
+                    state.current_scene = value + 1; // scenes are 6 - 10                    
+                } else {
+                    state.current_scene = value - 4; // scenes are 1 - 5
+                }
+
                 state.tuner_active = false;
 
                 midi_main.sendControlChange(SCENE_CHANGE_CC, state.current_scene, state.midi_channel);
@@ -137,9 +153,11 @@ void handle_input() {
                     DPRINTLN(state.current_bank);
                     break;
                 case 'a':
-                    // global A
-                    DPRINTLN("Global A");
+                    // global A (mute)
+                    DPRINTLN("Global A (mute)");
+                    state.muted = !state.muted;
 
+                    midi_main.sendControlChange(VOLUME_CC, state.muted ? MIDI_LOW : MIDI_HIGH, state.midi_channel);
                     break;
                 case 'b':
                     // global B
@@ -198,6 +216,10 @@ void update_display()
         sprintf(line1, "Tuner active");
         sprintf(line2, "%s", clear);
     }
+    else if (state.muted) {
+        sprintf(line1, "Patch: %d [MUTED]", state.current_patch);
+        sprintf(line2, "Scene: %d", state.current_scene);
+    }
     else
     {
         sprintf(line1, "Patch: %d", state.current_patch);
@@ -237,22 +259,30 @@ void clear_display()
 
 void update_leds()
 {
-    int rgb[3];
+    long colour;
 
     if (state.tuner_active)
     {
-        rgb[0] = 0x0;
-        rgb[1] = 0xff;
-        rgb[2] = 0x10;
+        colour = 0x0000ff10;
+    }
+    else if(state.muted) {
+        colour = 0x00ff0000;
     }
     else
     {
-        rgb[0] = 0x80;
-        rgb[1] = 0x00;
-        rgb[2] = 0x80;
+        colour = 0x0008020d;
     }
 
-    analogWrite(RED_PIN, rgb[0]);
-    analogWrite(GREEN_PIN, rgb[1]);
-    analogWrite(BLUE_PIN, rgb[2]);
+    setRGB(1, colour);
+}
+
+// colour is bytes in the 0RGB order
+void setRGB(int num, long colour) {
+    int r = (((1 << 8) - 1) & (colour >> 16));
+    int g = (((1 << 8) - 1) & (colour >> 8));
+    int b = (((1 << 8) - 1) & (colour));
+
+    analogWrite(RED_PIN, r);
+    analogWrite(GREEN_PIN, g);
+    analogWrite(BLUE_PIN, b);
 }

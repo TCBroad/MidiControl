@@ -17,5 +17,6 @@ void update_display();
 void clear_display();
 void update_leds();
 void handle_axe_fx();
+void setRGB(int num, long colour);
 
 #endif

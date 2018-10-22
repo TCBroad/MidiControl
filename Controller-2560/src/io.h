@@ -24,5 +24,4 @@ const char BLUE_PIN = 13;
 
 const char MIDI_MESSAGE_RECIEVED_PIN = 24;
 
-
 #endif

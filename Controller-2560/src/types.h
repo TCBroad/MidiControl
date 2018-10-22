@@ -8,6 +8,7 @@
 
 #define SCENE_CHANGE_CC 33
 #define TUNER_CC 15
+#define VOLUME_CC 21
 
 struct patch_t {
     const char* name;
@@ -23,6 +24,7 @@ struct state_t {
     unsigned char current_scene;
     unsigned char current_bank;
     bool tuner_active;
+    bool muted;
 };
 
 struct midi_message_t {
