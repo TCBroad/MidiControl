@@ -19,4 +19,6 @@ void update_leds();
 void handle_axe_fx();
 void setRGB(int num, long colour);
 
+void handleSystemExclusive(byte* array, unsigned size);
+
 #endif

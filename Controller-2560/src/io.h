@@ -23,5 +23,6 @@ const char GREEN_PIN = 12;
 const char BLUE_PIN = 13;
 
 const char MIDI_MESSAGE_RECIEVED_PIN = 24;
+const char AXEFX_MESSAGE_RECIEVED_PIN = 25;
 
 #endif

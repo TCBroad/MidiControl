@@ -6,10 +6,6 @@
 #define MIDI_HIGH 127
 #define MIDI_LOW 0
 
-#define SCENE_CHANGE_CC 33
-#define TUNER_CC 15
-#define VOLUME_CC 21
-
 struct patch_t {
     const char* name;
     unsigned char index;

@@ -6,6 +6,7 @@
 #include "main.h"
 #include "types.h"
 #include "io.h"
+#include "axefx.h"
 
 // move to eeprom
 struct patch_t patches[5] = {
@@ -51,6 +52,7 @@ void setup()
     pinMode(GREEN_PIN, OUTPUT);
     pinMode(BLUE_PIN, OUTPUT);
     pinMode(MIDI_MESSAGE_RECIEVED_PIN, OUTPUT);
+    pinMode(AXEFX_MESSAGE_RECIEVED_PIN, OUTPUT);
 
     keypad.setHoldTime(500);
 
@@ -80,6 +82,7 @@ void loop()
 
 void handle_input() {
     digitalWrite(MIDI_MESSAGE_RECIEVED_PIN, LOW);
+    digitalWrite(AXEFX_MESSAGE_RECIEVED_PIN, LOW);
 
     char key_pressed = keypad.getKey();
     if (key_pressed != NO_KEY)
@@ -196,13 +199,10 @@ void handle_axe_fx()
     {
         DPRINTLN("Read midi_axe_in()");
 
-        if (midi_axe_in.getChannel() == state.midi_channel)
-        {
-            struct midi_message_t message = {
-                midi_axe_in.getType(),
-                midi_axe_in.getData1(),
-                midi_axe_in.getData2()};
-        }
+        digitalWrite(AXEFX_MESSAGE_RECIEVED_PIN, HIGH);
+#ifdef DEBUG
+        delay(50);
+#endif
     }
 }
 
@@ -285,4 +285,8 @@ void setRGB(int num, long colour) {
     analogWrite(RED_PIN, r);
     analogWrite(GREEN_PIN, g);
     analogWrite(BLUE_PIN, b);
+}
+
+void handleSystemExclusive(byte* array, unsigned size) {
+    
 }
