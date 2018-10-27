@@ -270,7 +270,7 @@ void update_leds()
     }
     else
     {
-        colour = 0x0008020d;
+        colour = 0x00ff00ff;
     }
 
     setRGB(1, colour);
@@ -288,5 +288,5 @@ void setRGB(int num, long colour) {
 }
 
 void handleSystemExclusive(byte* array, unsigned size) {
-    
+
 }
