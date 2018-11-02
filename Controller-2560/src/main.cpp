@@ -33,6 +33,9 @@ char last_display2[32];
 
 long keypad_hold_timer;
 
+unsigned char midi_main_countdown = 0;
+unsigned char midi_axe_countdown = 0;
+
 // Hardware
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
 
@@ -62,7 +65,7 @@ void setup()
     pinMode(AXEFX_MESSAGE_RECIEVED_PIN, OUTPUT);
 
     keypad.setHoldTime(500);
-    
+
     // wake up the max7219
     lc.shutdown(0,false);
     lc.setIntensity(0,8);
@@ -85,6 +88,7 @@ void loop()
     handle_axe_fx();
     update_display();
     update_leds();
+    update_state();
 }
 
 void handle_input() {
@@ -189,9 +193,8 @@ void handle_midi_in() {
         DPRINTLN("Read midi_main()");
 
         digitalWrite(MIDI_MESSAGE_RECIEVED_PIN, HIGH);
-#ifdef DEBUG
-        delay(50);
-#endif
+
+        midi_main_countdown = 100;
     }
 }
 
@@ -207,9 +210,7 @@ void handle_axe_fx()
         DPRINTLN("Read midi_axe_in()");
 
         digitalWrite(AXEFX_MESSAGE_RECIEVED_PIN, HIGH);
-#ifdef DEBUG
-        delay(50);
-#endif
+        midi_axe_countdown = 100;
     }
 }
 
@@ -282,8 +283,8 @@ void update_leds()
 
     setRGB(1, colour);
 
-    lc.setDigit(0, 0, state.current_patch, false);
-    lc.setDigit(0, 1, state.current_scene, false);
+    lc.setDigit(0, 0, state.current_patch, midi_axe_countdown > 0);
+    lc.setDigit(0, 1, state.current_scene, midi_main_countdown > 0);
 }
 
 // colour is bytes in the 0RGB order
@@ -299,4 +300,14 @@ void setRGB(int num, long colour) {
 
 void handleSystemExclusive(byte* array, unsigned size) {
 
+}
+
+void update_state() {
+    if(midi_axe_countdown > 0) {
+        midi_axe_countdown--;
+    }
+
+    if(midi_main_countdown > 0) {
+        midi_main_countdown--;
+    }
 }
