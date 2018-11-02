@@ -22,7 +22,11 @@ const char RED_PIN = 11;
 const char GREEN_PIN = 12;
 const char BLUE_PIN = 13;
 
-const char MIDI_MESSAGE_RECIEVED_PIN = 24;
-const char AXEFX_MESSAGE_RECIEVED_PIN = 25;
+const char MIDI_MESSAGE_RECIEVED_PIN = 28;
+const char AXEFX_MESSAGE_RECIEVED_PIN = 29;
+
+const char LC_DATA_IN = 24;
+const char LC_CLK = 22;
+const char LC_LOAD = 23;
 
 #endif

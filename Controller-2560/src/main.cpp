@@ -2,6 +2,7 @@
 #include <MIDI.h>
 #include <Keypad.h>
 #include "LiquidCrystal.h"
+#include "LedControl.h"
 
 #include "main.h"
 #include "types.h"
@@ -39,6 +40,7 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, midi_main);
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, midi_axe_in);
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+LedControl lc = LedControl(LC_DATA_IN, LC_CLK, LC_LOAD, 1);
 
 void setup()
 {
@@ -48,6 +50,11 @@ void setup()
     Serial.begin(9600);
     DPRINTLN("Starting");
 
+    lcd.begin(16, 2);
+    lcd.setCursor(0, 0);
+
+    lcd.print("Starting...");
+
     pinMode(RED_PIN, OUTPUT);
     pinMode(GREEN_PIN, OUTPUT);
     pinMode(BLUE_PIN, OUTPUT);
@@ -55,11 +62,11 @@ void setup()
     pinMode(AXEFX_MESSAGE_RECIEVED_PIN, OUTPUT);
 
     keypad.setHoldTime(500);
-
-    lcd.begin(16, 2);
-    lcd.setCursor(0, 0);
-
-    lcd.print("Starting...");
+    
+    // wake up the max7219
+    lc.shutdown(0,false);
+    lc.setIntensity(0,8);
+    lc.clearDisplay(0);
 
     digitalWrite(RED_PIN, HIGH);
     digitalWrite(GREEN_PIN, HIGH);
@@ -274,6 +281,9 @@ void update_leds()
     }
 
     setRGB(1, colour);
+
+    lc.setDigit(0, 0, state.current_patch, false);
+    lc.setDigit(0, 1, state.current_scene, false);
 }
 
 // colour is bytes in the 0RGB order
