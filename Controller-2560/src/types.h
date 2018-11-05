@@ -21,6 +21,7 @@ struct state_t {
     unsigned char current_bank;
     bool tuner_active;
     bool muted;
+    char* patch_name;
 };
 
 struct midi_message_t {
