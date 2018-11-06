@@ -11,11 +11,11 @@
 
 // move to eeprom
 struct patch_t patches[5] = {
-    {"patch 1", 0, 1, -1, 0},
-    {"patch 2", 1, 2, -1, 0},
-    {"patch 3", 2, 3, -1, 0},
-    {"patch 4", 3, 4, -1, 0},
-    {"patch 5", 4, 5, -1, 0}
+    {"patch 1", 0, 0, -1, 0},
+    {"patch 2", 1, 1, -1, 0},
+    {"patch 3", 2, 2, -1, 0},
+    {"patch 4", 3, 3, -1, 0},
+    {"patch 5", 4, 4, -1, 0}
 };
 
 // channel, patch, scene, bank, tuner
@@ -37,6 +37,8 @@ unsigned char midi_main_countdown = 0;
 unsigned char midi_axe_countdown = 0;
 unsigned long lcd_countdown = 0;
 unsigned long led_countdown = 0;
+
+bool initialised = false;
 
 // Hardware
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
@@ -128,9 +130,9 @@ void handle_input() {
                 if (patch.program_change > 0)
                 {
                     midi_main.sendProgramChange(patch.program_change, state.midi_channel);
-                    midi_main.sendControlChange(SCENE_CHANGE_CC, 1, state.midi_channel);
+                    midi_main.sendControlChange(SCENE_CHANGE_CC, 0, state.midi_channel);
 
-                    state.current_scene = 1;
+                    state.current_scene = 0;
                 }
 
                 if (patch.cc_num > -1)
@@ -143,9 +145,9 @@ void handle_input() {
             if (value >= 5)
             {
                 if(keypad.getState() == HOLD) {                    
-                    state.current_scene = value + 1; // scenes are 6 - 10                    
+                    state.current_scene = value; // scenes are 5 - 9                    
                 } else {
-                    state.current_scene = value - 4; // scenes are 1 - 5
+                    state.current_scene = value - 5; // scenes are 0 - 4
                 }
 
                 state.tuner_active = false;
@@ -210,7 +212,7 @@ void handle_input() {
 
 void handle_midi_in() {
     if(midi_main.read()) {
-        DPRINTLN("Read midi_main()");
+        // DPRINTLN("Read midi_main()");
 
         digitalWrite(MIDI_MESSAGE_RECIEVED_PIN, HIGH);
 
@@ -222,7 +224,7 @@ void handle_axe_fx()
 {
     if (midi_axe_in.read())
     {
-        DPRINTLN("Read midi_axe_in()");
+        // DPRINTLN("Read midi_axe_in()");
 
         digitalWrite(AXEFX_MESSAGE_RECIEVED_PIN, HIGH);
         midi_axe_countdown = 100;
@@ -324,7 +326,7 @@ void setRGB(int num, long colour) {
 }
 
 void handleSystemExclusive(byte* data, unsigned size) {
-    DPRINTLN("Sysex handle()");
+    // DPRINTLN("Sysex handle()");
 
     if(size < 6) {
         DPRINTLN("Invalid message!");
@@ -341,16 +343,12 @@ void handleSystemExclusive(byte* data, unsigned size) {
         case AXE_ID_FIRMWARE:
             DPRINTLN("Firmware response");
 
-            sprintf(buffer, "%d.%d", data[6], data[7]);
-            writeText((char*)"Axe FX FW:", buffer);
+            sprintf(buffer, "Firmware: %d.%d", data[6], data[7]);
+            writeText((char*)"Axe FX connected", buffer);
             lcd_countdown = 5000;
 
             // connected to axe, get some info
-            midi_main.sendSysEx(6, get_patch_name);
-            delay(50);
             midi_main.sendSysEx(6, get_patch_num);
-            delay(50);
-            midi_main.sendSysEx(6, get_scene_num);
             delay(50);
 
             break;
@@ -358,19 +356,28 @@ void handleSystemExclusive(byte* data, unsigned size) {
             DPRINTLN("Preset name response");
             get_preset_name(state.patch_name, data, size);
 
+            initialised = true;
             break;
         case AXE_ID_PRESETNUM:
             DPRINTLN("Preset number response");
-            state.current_patch = data[6];
+            if (!initialised) {
+                state.current_patch = data[6];
+                midi_main.sendSysEx(7, get_scene_num);
+                delay(50);
+            }
 
             break;
         case AXE_ID_SCENE:
             DPRINTLN("Scene number response");
-            state.current_scene = data[6] + 1; // 0 - 7
-            
+            if (!initialised) {
+                state.current_scene = data[6] + 1; // 0 - 7
+                midi_main.sendSysEx(6, get_patch_name);
+                delay(50);
+            }
+
             break;
         case AXE_ID_TEMPO:
-            DPRINTLN("Tempo response");
+            // DPRINTLN("Tempo response");
             
             break;
     }
