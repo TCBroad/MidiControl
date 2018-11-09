@@ -1,0 +1,8 @@
+//
+// Created by tombr on 09/11/2018.
+//
+
+#ifndef CONTROLLER_2560_V2_TYPES_H
+#define CONTROLLER_2560_V2_TYPES_H
+
+#endif //CONTROLLER_2560_V2_TYPES_H

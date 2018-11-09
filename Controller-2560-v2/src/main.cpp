@@ -1,7 +1,9 @@
 #include <Arduino.h>
 #include "MidiController.h"
+#include "Hal.h"
 
-MidiController controller = MidiController();
+Hal hal = Hal();
+MidiController controller = MidiController(hal);
 
 void setup() {
     controller.init();
@@ -9,4 +11,8 @@ void setup() {
 
 void loop() {
 
+}
+
+void handleSystemExclusive(byte* array, unsigned size) {
+    hal.processSysex(array, size);
 }

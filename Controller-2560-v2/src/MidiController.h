@@ -6,8 +6,12 @@
 #define CONTROLLER_2560_V2_MIDICONTROLLER_H
 
 
+#include "Hal.h"
+
 class MidiController {
 public:
+    MidiController(Hal hal);
+
     void init();
 };
 

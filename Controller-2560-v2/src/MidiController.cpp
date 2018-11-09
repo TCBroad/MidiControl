@@ -7,3 +7,7 @@
 void MidiController::init() {
 
 }
+
+MidiController::MidiController(Hal hal) {
+
+}
