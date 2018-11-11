@@ -9,20 +9,23 @@
 #include "Hal.h"
 #include "types.h"
 
-class MidiController {
-public:
-    MidiController(Hal hal) : hal{hal} {};
+namespace MidiController2560 {
+    class MidiController {
+    public:
+        explicit MidiController(Hal hal) : hal{hal} {};
 
-    void init();
-    void loop();
+        void init();
 
-    void processSysex(byte *data, unsigned int size);
-    void processKeypad(KeypadEvent key);
-private:
-    Hal hal;
+        void loop();
 
-    struct state_t state = { 2, 0, 1, 0, false, false, (char*)"                "};
-};
+        void processSysex(byte *data, unsigned int size);
 
+        void processKeypad(KeypadEvent key);
 
+    private:
+        Hal hal;
+
+        struct state_t state = {2, 0, 1, 0, false, false, (char *) "                "};
+    };
+}
 #endif //CONTROLLER_2560_V2_MIDICONTROLLER_H

@@ -2,6 +2,8 @@
 #include "MidiController.h"
 #include "Hal.h"
 
+using namespace MidiController2560;
+
 Hal hal = Hal();
 MidiController controller = MidiController(hal);
 
