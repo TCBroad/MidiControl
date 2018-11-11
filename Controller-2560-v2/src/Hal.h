@@ -12,8 +12,8 @@
 #define GREEN_PIN 12
 #define BLUE_PIN 13
 
-#define MIDI_MESSAGE_RECIEVED_PIN 28
-#define AXEFX_MESSAGE_RECIEVED_PIN 29
+#define MIDI_MESSAGE_RECEIVED_PIN 28
+#define AXEFX_MESSAGE_RECEIVED_PIN 29
 
 #define LC_DATA_IN 24
 #define LC_CLK 22
@@ -29,14 +29,37 @@
 #include "LiquidCrystal.h"
 #include "LedControl.h"
 
+namespace {
+    enum DisplayDuration : long {
+        Blink = 1000,
+        Short = 5000,
+        Medium = 7000,
+        Long = 10000,
+        Hold = -1
+    };
+
+    enum MidiDevice {
+        Main,
+        AxeFx
+    };
+}
+
 class Hal {
 public:
     Hal();
 
+    // hardware
     void init(unsigned midiChannel);
+    void pollInputs();
 
-    void processSysex(byte *data, unsigned int size);
+    // display
+    void writeText(char *line1, char *line2, DisplayDuration duration);
+    void setDigit(unsigned digit, char position);
 
+    // midi
+    void sendProgramChange(byte program, unsigned channel, MidiDevice device);
+    void sendControlChange(byte ccNumber, byte data, unsigned channel, MidiDevice device);
+    void sendSysEx(byte* data, int size, MidiDevice device);
 private:
     LedControl lc = LedControl(LC_DATA_IN, LC_CLK, LC_LOAD, 1);
     Keypad keypad = createKeypad();
@@ -47,10 +70,13 @@ private:
     midi::MidiInterface<HardwareSerial> midiAxeIn = midi::MidiInterface<HardwareSerial>((HardwareSerial&)Serial2);
 
     char* lastMessage;
-    unsigned long led_countdown = 1000;
-    unsigned long lcd_countdown = 10000;
+    long ledCountdown = Blink;
+    long lcdCountdown = Long;
+
+    unsigned midiInLed = 100;
+    unsigned axeInLed = 100;
 
     Keypad createKeypad();
+    void updateTimers();
 };
-
 #endif //CONTROLLER_2560_V2_HAL_H

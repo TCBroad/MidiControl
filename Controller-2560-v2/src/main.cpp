@@ -14,5 +14,5 @@ void loop() {
 }
 
 void handleSystemExclusive(byte* array, unsigned size) {
-    hal.processSysex(array, size);
+    controller.processSysex(array, size);
 }

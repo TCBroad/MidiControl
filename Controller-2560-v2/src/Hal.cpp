@@ -4,6 +4,7 @@
 
 #include "Hal.h"
 #include "main.h"
+#include "axefx.h"
 
 #include <Arduino.h>
 #include <Keypad.h>
@@ -24,14 +25,31 @@ void Hal::init(unsigned midiChannel) {
 
     //void (Hal::*fptr)(unsigned char*, unsigned) = &Hal::handleSystemExclusive;
     this->midiAxeIn.setHandleSystemExclusive(handleSystemExclusive);
+
+    // wake up the max7219
+    this->lc.shutdown(0,false);
+    this->lc.setIntensity(0,8);
+    this->lc.clearDisplay(0);
+    this->lc.setChar(0, 0, '_', false);
+    this->lc.setChar(0, 1, '_', false);
+
+    digitalWrite(RED_PIN, HIGH);
+    digitalWrite(GREEN_PIN, HIGH);
+    digitalWrite(BLUE_PIN, HIGH);
+
+    this->lcd.clear();
+
+    this->lcd.setCursor(0, 0);
+    this->lcd.print("Checking axe fx");
+    this->midiMain.sendSysEx(6, get_firmware_version);
 }
 
 Hal::Hal() {
     pinMode(RED_PIN, OUTPUT);
     pinMode(GREEN_PIN, OUTPUT);
     pinMode(BLUE_PIN, OUTPUT);
-    pinMode(MIDI_MESSAGE_RECIEVED_PIN, OUTPUT);
-    pinMode(AXEFX_MESSAGE_RECIEVED_PIN, OUTPUT);
+    pinMode(MIDI_MESSAGE_RECEIVED_PIN, OUTPUT);
+    pinMode(AXEFX_MESSAGE_RECEIVED_PIN, OUTPUT);
 }
 
 Keypad Hal:: createKeypad() {
@@ -47,6 +65,24 @@ Keypad Hal:: createKeypad() {
     return Keypad((char*)keys, rowPins, colPins, KEYPAD_ROWS, KEYPAD_COLS);
 }
 
-void Hal::processSysex(byte *data, unsigned int size) {
+void Hal::writeText(char *line1, char *line2, DisplayDuration duration) {
 
+}
+
+void Hal::updateTimers() {
+    if (this->lcdCountdown > 0) {
+        this->lcdCountdown--;
+    }
+
+    if (this->ledCountdown > 0) {
+        this->ledCountdown--;
+    }
+
+    if (this->midiInLed > 0) {
+        this->midiInLed--;
+    }
+
+    if (this->axeInLed > 0) {
+        this->axeInLed--;
+    }
 }

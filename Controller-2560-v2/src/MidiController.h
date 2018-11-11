@@ -7,12 +7,21 @@
 
 
 #include "Hal.h"
+#include "types.h"
 
 class MidiController {
 public:
-    MidiController(Hal hal);
+    MidiController(Hal hal) : hal{hal} {};
 
     void init();
+    void loop();
+
+    void processSysex(byte *data, unsigned int size);
+    void processKeypad(KeypadEvent key);
+private:
+    Hal hal;
+
+    struct state_t state = { 2, 0, 1, 0, false, false, (char*)"                "};
 };
 
 
