@@ -16,5 +16,6 @@
 #endif
 
 void handleSystemExclusive(byte* array, unsigned size);
+void handleKeypadEvent(KeypadEvent key);
 
 #endif //CONTROLLER_2560_V2_MAIN_H

@@ -12,9 +12,13 @@ void setup() {
 }
 
 void loop() {
-
+    controller.loop();
 }
 
 void handleSystemExclusive(byte* array, unsigned size) {
     controller.processSysex(array, size);
+}
+
+void handleKeypadEvent(KeypadEvent key) {
+    controller.processKeypad(key);
 }

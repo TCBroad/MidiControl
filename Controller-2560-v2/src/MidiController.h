@@ -21,7 +21,6 @@ namespace MidiController2560 {
         void processSysex(byte *data, unsigned int size);
 
         void processKeypad(KeypadEvent key);
-
     private:
         Hal hal;
 

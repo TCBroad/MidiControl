@@ -25,7 +25,6 @@ namespace MidiController2560
         // const byte* data = midi_axe_in.getSysExArray();
         // unsigned char data_length = midi_axe_in.getSysExArrayLength();
 
-
         switch (data[5]) {
             case AXE_ID_FIRMWARE:
                 DPRINTLN("Firmware response");
@@ -70,7 +69,8 @@ namespace MidiController2560
     }
 
     void MidiController::loop() {
-
+        this->hal.pollInputs();
+        // this->hal.updateHardware(this->state, );
     }
 
     void MidiController::processKeypad(KeypadEvent key) {

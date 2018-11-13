@@ -5,6 +5,7 @@
 #include "Hal.h"
 #include "main.h"
 #include "axefx.h"
+#include "types.h"
 
 #include <Arduino.h>
 #include <Keypad.h>
@@ -22,10 +23,11 @@ namespace MidiController2560 {
 
         this->lcd.print("Starting...");
 
+        this->keypad.addEventListener(handleKeypadEvent);
+
         this->midiMain.begin(midiChannel);
         this->midiAxeIn.begin(midiChannel);
 
-        //void (Hal::*fptr)(unsigned char*, unsigned) = &Hal::handleSystemExclusive;
         this->midiAxeIn.setHandleSystemExclusive(handleSystemExclusive);
 
         // wake up the max7219
@@ -68,7 +70,9 @@ namespace MidiController2560 {
     }
 
     void Hal::writeText(char *line1, char *line2, DisplayDuration duration) {
+        this->writeText(line1, line2);
 
+        this->lcdCountdown = duration;
     }
 
     void Hal::updateTimers() {
@@ -92,7 +96,12 @@ namespace MidiController2560 {
     void Hal::pollInputs() {
         this->midiAxeIn.read();
         this->midiMain.read();
-        this->keypad.getKeys();
+        this->keypad.getKey();
+    }
+
+    void Hal::updateHardware(struct state_t state, struct patch_t currentPatch) {
+        this->updateLcd(state);
+        this->updateLeds(state);
     }
 
     void Hal::setDigit(unsigned digit, char position) {
@@ -121,7 +130,7 @@ namespace MidiController2560 {
         }
     }
 
-    void Hal::sendSysEx(const unsigned char *data, int size, MidiDevice device) {
+    void Hal::sendSysEx(const unsigned char *data, unsigned int size, MidiDevice device) {
         switch (device) {
             case Main:
                 this->midiMain.sendSysEx(size, data);
@@ -130,5 +139,60 @@ namespace MidiController2560 {
                 DPRINT("No output for this MIDI port");
                 break;
         }
+    }
+
+    void Hal::updateLcd(struct state_t state) {
+        if(this->lcdCountdown != 0) {
+            return;
+        }
+
+        char *line1 = (char *)malloc(sizeof(char) * 16);
+        char *line2 = (char *)malloc(sizeof(char) * 16);
+
+        if (state.tunerActive)
+        {
+            sprintf(line1, "Tuner active");
+            sprintf(line2, "%s", LCD_CLEAR);
+        }
+        else if (state.muted) {
+            sprintf(line1, "Patch: %d [MUTED]", state.currentPatch);
+            sprintf(line2, "Scene: %d", state.currentScene);
+        }
+        else
+        {
+            sprintf(line1, "Patch: %d", state.currentPatch);
+            sprintf(line2, "Scene: %d", state.currentScene);
+        }
+
+        String current = line1;
+        current.concat(line2);
+
+        if(!current.equals(this->lastMessage)) {
+            DPRINT("Updating display: ");
+            DPRINT(line1);
+            DPRINT("|");
+            DPRINTLN(line2);
+
+            this->writeText(line1, line2);
+
+            this->lastMessage = current;
+        }
+    }
+
+    void Hal::updateLeds(struct state_t state) {
+        if(this->ledCountdown == 0) {
+            lc.setDigit(0, 0, state.currentPatch, axeInLed > 0);
+            lc.setDigit(0, 1, state.currentScene, midiInLed > 0);
+        }
+    }
+
+    void Hal::writeText(char *line1, char *line2) {
+        this->lcd.clear();
+
+        this->lcd.setCursor(0, 0);
+        this->lcd.print(line1);
+
+        this->lcd.setCursor(0, 1);
+        this->lcd.print(line2);
     }
 }

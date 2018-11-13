@@ -19,9 +19,9 @@
 #define LC_CLK 22
 #define LC_LOAD 23
 
-#define LCD_CLEAR "                ";
+#define LCD_CLEAR "                "
 
-#include <string.h>
+#include "types.h"
 
 #include <Arduino.h>
 #include <MIDI.h>
@@ -51,6 +51,7 @@ namespace MidiController2560 {
         void init(unsigned midiChannel);
 
         void pollInputs();
+        void updateHardware(struct state_t state, struct patch_t currentPatch);
 
         // display
         void writeText(char *line1, char *line2, DisplayDuration duration);
@@ -62,7 +63,7 @@ namespace MidiController2560 {
 
         void sendControlChange(byte ccNumber, byte data, unsigned channel, MidiDevice device);
 
-        void sendSysEx(const unsigned char *data, int size, MidiDevice device);
+        void sendSysEx(const unsigned char *data, unsigned int size, MidiDevice device);
 
     private:
         LedControl lc = LedControl(LC_DATA_IN, LC_CLK, LC_LOAD, 1);
@@ -73,7 +74,7 @@ namespace MidiController2560 {
         midi::MidiInterface<HardwareSerial> midiMain = midi::MidiInterface<HardwareSerial>((HardwareSerial &) Serial3);
         midi::MidiInterface<HardwareSerial> midiAxeIn = midi::MidiInterface<HardwareSerial>((HardwareSerial &) Serial2);
 
-        char *lastMessage;
+        String lastMessage;
         long ledCountdown = Blink;
         long lcdCountdown = Long;
 
@@ -82,7 +83,11 @@ namespace MidiController2560 {
 
         Keypad createKeypad();
 
+        void writeText(char *line1, char *line2);
+
         void updateTimers();
+        void updateLcd(struct state_t state);
+        void updateLeds(struct state_t state);
     };
 }
 #endif //CONTROLLER_2560_V2_HAL_H
