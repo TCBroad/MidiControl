@@ -30,12 +30,16 @@ namespace MidiController2560 {
 
         this->midiAxeIn.setHandleSystemExclusive(handleSystemExclusive);
 
+        this->midiChannel = midiChannel;
+
         // wake up the max7219
         this->lc.shutdown(0, false);
         this->lc.setIntensity(0, 8);
         this->lc.clearDisplay(0);
         this->lc.setChar(0, 0, '_', false);
         this->lc.setChar(0, 1, '_', false);
+
+        this->tlc.begin();
 
         digitalWrite(RED_PIN, HIGH);
         digitalWrite(GREEN_PIN, HIGH);
@@ -99,55 +103,31 @@ namespace MidiController2560 {
         this->keypad.getKey();
     }
 
-    void Hal::updateHardware(struct state_t state, struct patch_t currentPatch) {
+    void Hal::updateHardware(struct state_t &state, struct patch_t &currentPatch) {
         this->updateLcd(state);
-        this->updateLeds(state);
+        this->updateLeds(state, currentPatch);
+
+        this->updateTimers();
     }
 
-    void Hal::setDigit(unsigned digit, char position) {
-
+    void Hal::sendProgramChange(byte program) {
+        this->midiMain.sendProgramChange(program, this->midiChannel);
     }
 
-    void Hal::sendProgramChange(byte program, unsigned channel, MidiDevice device) {
-        switch (device) {
-            case Main:
-                this->midiMain.sendProgramChange(program, channel);
-                break;
-            case AxeFx:
-                DPRINT("No output for this MIDI port");
-                break;
-        }
+    void Hal::sendControlChange(byte ccNumber, byte data) {
+        this->midiMain.sendControlChange(ccNumber, data, this->midiChannel);
     }
 
-    void Hal::sendControlChange(byte ccNumber, byte data, unsigned channel, MidiDevice device) {
-        switch (device) {
-            case Main:
-                this->midiMain.sendControlChange(ccNumber, data, channel);
-                break;
-            case AxeFx:
-                DPRINT("No output for this MIDI port");
-                break;
-        }
+    void Hal::sendSysEx(const unsigned char *data, unsigned int size) {
+        this->midiMain.sendSysEx(size, data);
     }
 
-    void Hal::sendSysEx(const unsigned char *data, unsigned int size, MidiDevice device) {
-        switch (device) {
-            case Main:
-                this->midiMain.sendSysEx(size, data);
-                break;
-            case AxeFx:
-                DPRINT("No output for this MIDI port");
-                break;
-        }
-    }
-
-    void Hal::updateLcd(struct state_t state) {
+    void Hal::updateLcd(struct state_t &state) {
         if(this->lcdCountdown != 0) {
             return;
         }
 
-        char *line1 = (char *)malloc(sizeof(char) * 16);
-        char *line2 = (char *)malloc(sizeof(char) * 16);
+        char line1[17]; char line2[17];
 
         if (state.tunerActive)
         {
@@ -164,10 +144,11 @@ namespace MidiController2560 {
             sprintf(line2, "Scene: %d", state.currentScene);
         }
 
-        String current = line1;
-        current.concat(line2);
+        char current[33];
+        strncat(current, line1, 16);
+        strncat(current, line2, 16);
 
-        if(!current.equals(this->lastMessage)) {
+        if (strcmp(current, this->lastMessage) != 0) {
             DPRINT("Updating display: ");
             DPRINT(line1);
             DPRINT("|");
@@ -175,14 +156,33 @@ namespace MidiController2560 {
 
             this->writeText(line1, line2);
 
-            this->lastMessage = current;
+            strcpy(this->lastMessage, current);
         }
     }
 
-    void Hal::updateLeds(struct state_t state) {
+    void Hal::updateLeds(struct state_t &state, struct patch_t &currentPatch) {
         if(this->ledCountdown == 0) {
-            lc.setDigit(0, 0, state.currentPatch, axeInLed > 0);
-            lc.setDigit(0, 1, state.currentScene, midiInLed > 0);
+            lc.setDigit(0, 0, state.currentPatch, this->axeInLed > 0);
+            lc.setDigit(0, 1, state.currentScene, this->midiInLed > 0);
+        }
+
+        auto r = (uint16_t)(255 & (currentPatch.ledColour >> 16));
+        auto g = (uint16_t)(255 & (currentPatch.ledColour >> 8));
+        auto b = (uint16_t)(255 & (currentPatch.ledColour));
+
+        tlc.setLED(state.currentPatch, r, g, b);
+
+        // have to drive the last 2 scene leds outside of the TLC5947 as it only has 8 channels
+        if(state.currentScene == 4) {
+            analogWrite(RED_PIN, r);
+            analogWrite(GREEN_PIN, g);
+            analogWrite(BLUE_PIN, b);
+        } else if (state.currentScene == 5) {
+            analogWrite(RED_PIN, r);
+            analogWrite(GREEN_PIN, g);
+            analogWrite(BLUE_PIN, b);
+        } else {
+            tlc.setLED(state.currentScene, r, g, b);
         }
     }
 

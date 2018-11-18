@@ -11,6 +11,7 @@ struct patch_t {
     unsigned char programChange;
     char ccNum;
     unsigned char ccData;
+    long ledColour;
 };
 
 struct state_t {

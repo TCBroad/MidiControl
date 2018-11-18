@@ -21,7 +21,7 @@ namespace MidiController2560
             return;
         }
 
-        char *buffer = (char *) malloc(sizeof(char) * 16);
+        char buffer[17];
         // const byte* data = midi_axe_in.getSysExArray();
         // unsigned char data_length = midi_axe_in.getSysExArrayLength();
 
@@ -33,7 +33,7 @@ namespace MidiController2560
                 this->hal.writeText((char *) "Axe FX connected", buffer, Medium);
 
                 // connected to axe, get some info
-                this->hal.sendSysEx(get_patch_num, 6, Main);
+                this->hal.sendSysEx(get_patch_num, 6);
                 delay(50);
 
                 break;
@@ -65,12 +65,14 @@ namespace MidiController2560
                 // DPRINTLN("Tempo response");
 
                 break;
+            default:
+                break;
         }
     }
 
     void MidiController::loop() {
         this->hal.pollInputs();
-        // this->hal.updateHardware(this->state, );
+        this->hal.updateHardware(this->state, this->patches[this->state.currentPatch]);
     }
 
     void MidiController::processKeypad(KeypadEvent key) {
