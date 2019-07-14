@@ -76,6 +76,107 @@ namespace MidiController2560
     }
 
     void MidiController::processKeypad(KeypadEvent key) {
+        switch (this->hal.getKeypadState()) {
+            case PRESSED:
+                this->handleKeyPressed(key);
+                break;
+            case HOLD:
+                break;
+            default:break;
+        }
+    }
 
+    void MidiController::handleKeyPressed(KeypadEvent key) {
+        // work out what it is
+        if (key >= '0' && key <= '9')
+        {
+            auto value = key - 48; // to int from char
+            DPRINTLN(value);
+
+            this->state.tunerActive = false;
+
+            // 0 - 4 it's a patch change
+            if (value >= 0 && value <= 4)
+            {
+                this->state.currentPatch = static_cast<unsigned char>(value);
+                struct patch_t patch = this->patches[this->state.currentPatch];
+
+                if (patch.programChange > 0)
+                {
+                    this->hal.sendProgramChange(patch.programChange);
+                    this->hal.sendControlChange(SCENE_CHANGE_CC, 0);
+
+                    this->state.currentScene = 0;
+                }
+
+                if (patch.ccNum > -1)
+                {
+                    this->hal.sendControlChange(static_cast<byte>(patch.ccNum), patch.ccData);
+                }
+            }
+
+            // 5 - 9 it's a scene change
+            if (value >= 5)
+            {
+                this->state.currentScene = static_cast<unsigned char>(max(value - 5, 0)); // scenes are 0 - 4
+
+//                if(keypad.getState() == HOLD) {
+//                    this->state.currentScene = value; // scenes are 5 - 9
+//                } else {
+//                }
+
+                this->state.tunerActive = false;
+
+                this->hal.sendControlChange(SCENE_CHANGE_CC, this->state.currentScene);
+            }
+        }
+        else
+        {
+            // command button
+            byte sysex[] = { 0x00, 0x01, 0x74, 0x03, 0x08, 0x0e };
+            switch (key)
+            {
+                case 'T':
+                    // tuner
+                    DPRINTLN("Tuner");
+                    this->state.tunerActive = !this->state.tunerActive;
+
+                    this->hal.sendControlChange(TUNER_CC, this->state.tunerActive ? MIDI_HIGH : MIDI_LOW);
+                    break;
+                case 'U':
+                    // bank up
+                    DPRINT("Bank up: ");
+                    this->state.currentBank = min(this->state.currentBank + 1, MAX_BANKS);
+
+                    DPRINTLN(this->state.currentBank);
+                    break;
+                case 'D':
+                    // bank down
+                    DPRINT("Bank down: ");
+                    this->state.currentBank = max(this->state.currentBank - 1, 0);
+
+                    DPRINTLN(state.currentBank);
+                    break;
+                case 'a':
+                    // global A (mute)
+                    DPRINTLN("Global A (mute)");
+                    state.muted = !state.muted;
+
+                    this->hal.sendControlChange(VOLUME_CC, state.muted ? MIDI_LOW : MIDI_HIGH);
+                    break;
+                case 'b':
+                    // global B
+                    DPRINTLN("Global B");
+
+                    this->hal.sendSysEx(sysex, 6);
+
+                    break;
+                case 'c':
+                    // global C
+                    DPRINTLN("Global C");
+
+                    break;
+            }
+        }
     }
 }

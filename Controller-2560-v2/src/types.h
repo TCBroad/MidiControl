@@ -5,6 +5,11 @@
 #ifndef CONTROLLER_2560_V2_TYPES_H
 #define CONTROLLER_2560_V2_TYPES_H
 
+#define MIDI_HIGH 127
+#define MIDI_LOW 0
+
+#include <Arduino.h>
+
 struct patch_t {
     const char* name;
     unsigned char index;
@@ -18,7 +23,7 @@ struct state_t {
     unsigned char midiChannel;
     unsigned char currentPatch;
     unsigned char currentScene;
-    unsigned char currentBank;
+    int currentBank;
     bool tunerActive;
     bool muted;
     char* patchName;

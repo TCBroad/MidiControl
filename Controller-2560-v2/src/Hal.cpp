@@ -14,7 +14,7 @@
 
 namespace MidiController2560 {
 
-    void Hal::init(unsigned midiChannel) {
+    void Hal::init(byte midiChannel) {
         Serial.begin(9600);
         DPRINTLN("Starting");
 
@@ -118,7 +118,7 @@ namespace MidiController2560 {
         this->midiMain.sendControlChange(ccNumber, data, this->midiChannel);
     }
 
-    void Hal::sendSysEx(const unsigned char *data, unsigned int size) {
+    void Hal::sendSysEx(const byte *data, unsigned int size) {
         this->midiMain.sendSysEx(size, data);
     }
 
@@ -194,5 +194,9 @@ namespace MidiController2560 {
 
         this->lcd.setCursor(0, 1);
         this->lcd.print(line2);
+    }
+
+    KeyState Hal::getKeypadState() {
+        return this->keypad.getState();
     }
 }

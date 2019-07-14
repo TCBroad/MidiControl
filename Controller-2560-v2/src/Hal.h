@@ -43,17 +43,12 @@ namespace MidiController2560 {
         Hold = -1
     };
 
-    enum MidiDevice {
-        Main,
-        AxeFx
-    };
-
     class Hal {
     public:
         Hal();
 
         // hardware
-        void init(unsigned midiChannel);
+        void init(byte midiChannel);
 
         void pollInputs();
         void updateHardware(struct state_t &state, struct patch_t &currentPatch);
@@ -66,7 +61,9 @@ namespace MidiController2560 {
 
         void sendControlChange(byte ccNumber, byte data);
 
-        void sendSysEx(const unsigned char *data, unsigned int size);
+        void sendSysEx(const byte *data, unsigned int size);
+
+        KeyState getKeypadState();
 
     private:
         LedControl lc = LedControl(LC_DATA_IN, LC_CLK, LC_LOAD, 1);
@@ -85,7 +82,7 @@ namespace MidiController2560 {
         unsigned midiInLed = 100;
         unsigned axeInLed = 100;
 
-        unsigned midiChannel;
+        byte midiChannel;
 
         Keypad createKeypad();
 

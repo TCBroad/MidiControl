@@ -5,6 +5,7 @@
 #ifndef CONTROLLER_2560_V2_MIDICONTROLLER_H
 #define CONTROLLER_2560_V2_MIDICONTROLLER_H
 
+#define MAX_BANKS 5
 
 #include "Hal.h"
 #include "types.h"
@@ -12,7 +13,7 @@
 namespace MidiController2560 {
     class MidiController {
     public:
-        explicit MidiController(Hal hal) : hal{hal} {};
+        explicit MidiController(Hal &hal) : hal{hal} {};
 
         void init();
 
@@ -33,6 +34,8 @@ namespace MidiController2560 {
                 {"patch 4", 3, 3, -1, 0},
                 {"patch 5", 4, 4, -1, 0}
         };
+
+        void handleKeyPressed(KeypadEvent key);
     };
 }
 #endif //CONTROLLER_2560_V2_MIDICONTROLLER_H
