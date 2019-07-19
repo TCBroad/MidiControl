@@ -1,24 +1,31 @@
-#include <Arduino.h>
-#include "MidiController.h"
-#include "Hal.h"
+#include "main.h"
+#include <Keypad.h>
+
+#include "HardwareController.h"
+#include "State.h"
+#include "EventHandler.h"
 
 using namespace MidiController2560;
 
-Hal hal = Hal();
-MidiController controller = MidiController(hal);
+State state;
+HardwareController controller(2);
+EventHandler eventHandler(controller, state);
 
 void setup() {
-    controller.init();
+    Serial.begin(9600);
+    DPRINTLNF("Starting");
+
+    controller.setup();
 }
 
 void loop() {
     controller.loop();
 }
 
-void handleSystemExclusive(byte* array, unsigned size) {
-    controller.processSysex(array, size);
+void handleKeypadEvent(KeypadEvent key) {
+    eventHandler.handleSwitch(key);
 }
 
-void handleKeypadEvent(KeypadEvent key) {
-    controller.processKeypad(key);
+void handleSystemExclusive(byte *array, unsigned size) {
+    eventHandler.handleSysEx(array, size);
 }

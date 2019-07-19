@@ -1,0 +1,23 @@
+//
+// Created by tombr on 19/07/2019.
+//
+
+#ifndef CONTROLLER_2560_V2_IO_MEGA2560_H
+#define CONTROLLER_2560_V2_IO_MEGA2560_H
+
+#define RED_PIN 11
+#define GREEN_PIN 12
+#define BLUE_PIN 13
+
+#define LC_DATA_IN 24
+#define LC_CLK 22
+#define LC_LOAD 23
+
+#define TLC_DATA 25
+#define TLC_CLK 26
+#define TLC_LATCH 27
+
+#define MIDI_MESSAGE_RECEIVED_PIN 28
+#define AXEFX_MESSAGE_RECEIVED_PIN 29
+
+#endif //CONTROLLER_2560_V2_IO_MEGA2560_H

@@ -8,25 +8,17 @@
 #define MIDI_HIGH 127
 #define MIDI_LOW 0
 
+#define MAX_BANKS 5
+
 #include <Arduino.h>
 
 struct patch_t {
     const char* name;
     unsigned char index;
-    unsigned char programChange;
+    char programChange;
     char ccNum;
     unsigned char ccData;
     long ledColour;
-};
-
-struct state_t {
-    unsigned char midiChannel;
-    unsigned char currentPatch;
-    unsigned char currentScene;
-    int currentBank;
-    bool tunerActive;
-    bool muted;
-    char* patchName;
 };
 
 #endif //CONTROLLER_2560_V2_TYPES_H
